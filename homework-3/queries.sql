@@ -1,14 +1,14 @@
 -- Напишите запросы, которые выводят следующую информацию:
 -- 1. Название компании заказчика (company_name из табл. customers) и ФИО сотрудника, работающего над заказом этой компании (см таблицу employees),
 -- когда и заказчик и сотрудник зарегистрированы в городе London, а доставку заказа ведет компания United Package (company_name в табл shippers)
-SELECT DISTINCT customers.company_name, concat(first_name, ' ', last_name) as employee FROM employees
+SELECT customers.company_name, concat(employees.first_name, ' ', employees.last_name) as employee FROM orders
 INNER JOIN
-orders ON (orders.employee_id=employees.employee_id)
+employees ON employees.employee_id = orders.employee_id
 INNER JOIN
 customers USING(customer_id)
-WHERE customers.city = 'London' AND employees.city = 'London' AND
-EXISTS
-(SELECT company_name FROM shippers WHERE company_name = 'United Package')
+INNER JOIN
+shippers ON (shippers.shipper_id = orders.ship_via)
+WHERE customers.city = 'London' AND employees.city = 'London' AND shippers.company_name = 'United Package'
 
 -- 2. Наименование продукта, количество товара (product_name и units_in_stock в табл products),
 -- имя поставщика и его телефон (contact_name и phone в табл suppliers) для таких продуктов,
@@ -26,5 +26,6 @@ WHERE NOT EXISTS(SELECT customer_id FROM orders WHERE customers.customer_id = or
 
 -- 4. уникальные названия продуктов, которых заказано ровно 10 единиц (количество заказанных единиц см в колонке quantity табл order_details)
 -- Этот запрос написать именно с использованием подзапроса.
-SELECT DISTINCT product_name FROM products
-WHERE EXISTS (SELECT product_id FROM order_details WHERE quantity = 10)
+SELECT DISTINCT product_id FROM order_details
+WHERE quantity = 10
+
